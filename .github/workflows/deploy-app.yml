@@ -1,0 +1,41 @@
+name: Deploy Function App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'src/**' ]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-function-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/requirements.txt
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Function App
+        uses: Azure/functions-action@v1
+        with:
+          app-name: 'simple-func-iac-ba'
+          slot-name: 'production'
+          package: './src'
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true

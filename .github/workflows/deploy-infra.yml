@@ -1,0 +1,53 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'infra/**' ]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Resource Group
+        run: |
+          az group create \
+            --name rg-simple-func-iac \
+            --location westeurope
+
+      - name: Deploy Infrastructure
+        run: |
+          az deployment group create \
+            --resource-group rg-simple-func-iac \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam \
+            --verbose
+
+      - name: Get Function App Name
+        id: get-function-app
+        run: |
+          FUNCTION_APP_NAME=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name main \
+            --query properties.outputs.functionAppName.value \
+            --output tsv)
+          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Configure GitHub Deployment
+        run: |
+          # Note: This will be configured manually in the portal for now
+          # Future enhancement: Use Azure CLI to configure GitHub deployment source
+          echo "Function App created: ${{ steps.get-function-app.outputs.function-app-name }}"
+          echo "Configure GitHub deployment manually in Azure Portal"
