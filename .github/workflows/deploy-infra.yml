@@ -35,53 +35,33 @@ jobs:
           az account show --output table
           az group list --output table
 
-      - name: Deploy Infrastructure (Single Step)
-        shell: bash
-        run: |
-          set -e
-          
-          echo "=== Starting Infrastructure Deployment ==="
-          
-          # Try different deployment approach with inline parameters
-          echo "Attempting deployment with inline parameters..."
-          
-          # Method 1: Try with --no-wait flag and inline parameters
-          timeout 300 az deployment group create \
-            --resource-group rg-simple-func-iac \
-            --template-file infra/main.bicep \
-            --parameters \
-              functionAppName='simple-func-iac-ba' \
-              storageAccountName='simplefunciacba' \
-              appInsightsName='simple-func-iac-ba-insights' \
-              hostingPlanName='simple-func-iac-ba-plan' \
-            --name infrastructure-deployment \
-            --mode Incremental \
-            --no-wait \
-            || echo "Deployment started in background"
-          
-          # Wait for deployment to complete
-          echo "Waiting for deployment to complete..."
-          az deployment group wait \
-            --resource-group rg-simple-func-iac \
-            --name infrastructure-deployment \
-            --created \
-            --timeout 600
-          
-          echo "Deployment completed successfully"
+      - name: Deploy Infrastructure with GitHub Actions
+        uses: azure/arm-deploy@v1
+        id: deploy-infra
+        with:
+          resourceGroupName: rg-simple-func-iac
+          template: infra/main.bicep
+          parameters: >
+            functionAppName=simple-func-iac-ba
+            storageAccountName=simplefunciacba
+            appInsightsName=simple-func-iac-ba-insights
+            hostingPlanName=simple-func-iac-ba-plan
+          deploymentMode: Incremental
+          deploymentName: infrastructure-deployment
+          failOnStdErr: false
 
       - name: Get Function App Name
         id: get-function-app
         run: |
-          FUNCTION_APP_NAME=$(az deployment group show \
-            --resource-group rg-simple-func-iac \
-            --name infrastructure-deployment \
-            --query properties.outputs.functionAppName.value \
-            --output tsv)
-          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
+          echo "function-app-name=${{ steps.deploy-infra.outputs.functionAppName }}" >> $GITHUB_OUTPUT
 
-      - name: Configure GitHub Deployment
+      - name: Show Deployment Results
         run: |
-          # Note: This will be configured manually in the portal for now
-          # Future enhancement: Use Azure CLI to configure GitHub deployment source
-          echo "Function App created: ${{ steps.get-function-app.outputs.function-app-name }}"
-          echo "Configure GitHub deployment manually in Azure Portal"
+          echo "=== Deployment Completed Successfully ==="
+          echo "Function App Name: ${{ steps.deploy-infra.outputs.functionAppName }}"
+          echo "Function App URL: ${{ steps.deploy-infra.outputs.functionAppUrl }}"
+          echo "Storage Account: ${{ steps.deploy-infra.outputs.storageAccountName }}"
+          echo "App Insights: ${{ steps.deploy-infra.outputs.appInsightsName }}"
+          echo "=== Next Steps ==="
+          echo "1. Run the 'Deploy Function App' workflow to deploy the function code"
+          echo "2. Test the endpoints after deployment"
