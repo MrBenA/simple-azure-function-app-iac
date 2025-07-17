@@ -22,6 +22,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: false
           allow-no-subscriptions: false
+          azcliversion: 2.72.0
 
       - name: Create Resource Group
         run: |
@@ -35,33 +36,72 @@ jobs:
           az account show --output table
           az group list --output table
 
-      - name: Deploy Infrastructure with GitHub Actions
-        uses: azure/arm-deploy@v1
-        id: deploy-infra
-        with:
-          resourceGroupName: rg-simple-func-iac
-          template: infra/main.bicep
-          parameters: >
-            functionAppName=simple-func-iac-ba
-            storageAccountName=simplefunciacba
-            appInsightsName=simple-func-iac-ba-insights
-            hostingPlanName=simple-func-iac-ba-plan
-          deploymentMode: Incremental
-          deploymentName: infrastructure-deployment
-          failOnStdErr: false
-
-      - name: Get Function App Name
-        id: get-function-app
+      - name: Test Deployment (What-If)
         run: |
-          echo "function-app-name=${{ steps.deploy-infra.outputs.functionAppName }}" >> $GITHUB_OUTPUT
+          echo "=== Testing deployment to identify any issues ==="
+          az deployment group what-if \
+            --resource-group rg-simple-func-iac \
+            --template-file infra/main.bicep \
+            --parameters \
+              functionAppName='simple-func-iac-ba' \
+              storageAccountName='simplefunciacba' \
+              appInsightsName='simple-func-iac-ba-insights' \
+              hostingPlanName='simple-func-iac-ba-plan' \
+            --verbose
+
+      - name: Deploy Infrastructure with Azure CLI (Fixed Version)
+        run: |
+          echo "=== Starting actual deployment ==="
+          az deployment group create \
+            --resource-group rg-simple-func-iac \
+            --template-file infra/main.bicep \
+            --parameters \
+              functionAppName='simple-func-iac-ba' \
+              storageAccountName='simplefunciacba' \
+              appInsightsName='simple-func-iac-ba-insights' \
+              hostingPlanName='simple-func-iac-ba-plan' \
+            --name infrastructure-deployment \
+            --mode Incremental \
+            --verbose
+
+      - name: Get Deployment Outputs
+        id: get-outputs
+        run: |
+          FUNCTION_APP_NAME=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --query properties.outputs.functionAppName.value \
+            --output tsv)
+          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
 
       - name: Show Deployment Results
         run: |
           echo "=== Deployment Completed Successfully ==="
-          echo "Function App Name: ${{ steps.deploy-infra.outputs.functionAppName }}"
-          echo "Function App URL: ${{ steps.deploy-infra.outputs.functionAppUrl }}"
-          echo "Storage Account: ${{ steps.deploy-infra.outputs.storageAccountName }}"
-          echo "App Insights: ${{ steps.deploy-infra.outputs.appInsightsName }}"
+          FUNCTION_APP_NAME=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --query properties.outputs.functionAppName.value \
+            --output tsv)
+          FUNCTION_APP_URL=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --query properties.outputs.functionAppUrl.value \
+            --output tsv)
+          STORAGE_ACCOUNT_NAME=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --query properties.outputs.storageAccountName.value \
+            --output tsv)
+          APP_INSIGHTS_NAME=$(az deployment group show \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --query properties.outputs.appInsightsName.value \
+            --output tsv)
+          
+          echo "Function App Name: $FUNCTION_APP_NAME"
+          echo "Function App URL: $FUNCTION_APP_URL"
+          echo "Storage Account: $STORAGE_ACCOUNT_NAME"
+          echo "App Insights: $APP_INSIGHTS_NAME"
           echo "=== Next Steps ==="
           echo "1. Run the 'Deploy Function App' workflow to deploy the function code"
           echo "2. Test the endpoints after deployment"
