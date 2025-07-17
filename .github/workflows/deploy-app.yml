@@ -27,9 +27,10 @@ jobs:
           pip install -r src/requirements.txt
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: false
 
       - name: Deploy Function App
         uses: Azure/functions-action@v1
