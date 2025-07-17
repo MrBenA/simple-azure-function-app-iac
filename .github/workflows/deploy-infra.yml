@@ -35,16 +35,41 @@ jobs:
           az account show --output table
           az group list --output table
 
-      - name: Deploy Infrastructure
+      - name: Deploy Infrastructure (Single Step)
+        shell: bash
         run: |
-          echo "Starting infrastructure deployment..."
-          az deployment group create \
+          set -e
+          
+          echo "=== Starting Infrastructure Deployment ==="
+          
+          # Build Bicep template
+          echo "Building Bicep template..."
+          az bicep build --file infra/main.bicep --outfile infra/main.json
+          
+          echo "Template built successfully"
+          
+          # Try different deployment approach
+          echo "Attempting deployment..."
+          
+          # Method 1: Try with --no-wait flag
+          timeout 300 az deployment group create \
             --resource-group rg-simple-func-iac \
-            --template-file infra/main.bicep \
+            --template-file infra/main.json \
             --parameters infra/main.bicepparam \
             --name infrastructure-deployment \
             --mode Incremental \
-            --output json
+            --no-wait \
+            || echo "Deployment started in background"
+          
+          # Wait for deployment to complete
+          echo "Waiting for deployment to complete..."
+          az deployment group wait \
+            --resource-group rg-simple-func-iac \
+            --name infrastructure-deployment \
+            --created \
+            --timeout 600
+          
+          echo "Deployment completed successfully"
 
       - name: Get Function App Name
         id: get-function-app
