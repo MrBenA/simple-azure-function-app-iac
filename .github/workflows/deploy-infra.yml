@@ -21,6 +21,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: false
+          allow-no-subscriptions: false
 
       - name: Create Resource Group
         run: |
@@ -29,22 +30,21 @@ jobs:
             --location westeurope \
             --output none
 
-      - name: Validate Bicep Template
+      - name: Test Azure CLI Connection
         run: |
-          az deployment group validate \
-            --resource-group rg-simple-func-iac \
-            --template-file infra/main.bicep \
-            --parameters infra/main.bicepparam \
-            --output table
+          az account show --output table
+          az group list --output table
 
       - name: Deploy Infrastructure
         run: |
+          echo "Starting infrastructure deployment..."
           az deployment group create \
             --resource-group rg-simple-func-iac \
             --template-file infra/main.bicep \
             --parameters infra/main.bicepparam \
             --name infrastructure-deployment \
-            --output table
+            --mode Incremental \
+            --output json
 
       - name: Get Function App Name
         id: get-function-app
