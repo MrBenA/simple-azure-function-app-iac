@@ -284,16 +284,51 @@ curl "https://your-function-app.azurewebsites.net/api/hello?name=Test"
 4. **Proven Patterns**: Based on successful exemplar project
 5. **Incremental Approach**: Added IaC without changing what works
 
-## Next Steps
+## Next Steps - Iteration Checklist
 
-After this IaC version is working, future iterations can add:
+### Planned Iteration Roadmap
 
-1. **Managed Identity**: Replace storage account keys with managed identity
-2. **Multiple Environments**: Add dev/staging/prod environments
-3. **Advanced Monitoring**: Enhanced Application Insights configuration
-4. **Security**: Network restrictions, key vault integration
-5. **Database Integration**: Add database connections
-6. **API Authentication**: Add proper API authentication
+**✅ Iteration 1: Simple Function App (Exemplar)**
+- Status: COMPLETED
+- Repository: https://github.com/MrBenA/simple-azure-function-app
+- Features: Basic 3-function app, manual portal deployment, basic auth
+
+**✅ Iteration 2: Infrastructure as Code (Current)**
+- Status: COMPLETED  
+- Repository: https://github.com/MrBenA/simple-azure-function-app-iac
+- Features: Same functions + Bicep templates + GitHub Actions automation
+
+**📋 Iteration 3: Complex Function App**
+- Status: PENDING
+- Goal: Add more sophisticated function capabilities while maintaining IaC
+- Planned Features:
+  - Multiple function types (HTTP, Timer, Queue triggers)
+  - Function chaining and workflow patterns
+  - Input/output bindings to Azure services
+  - Error handling and retry policies
+  - More complex business logic
+  - Enhanced monitoring and logging
+  - Environment-specific configurations
+
+**📋 Iteration 4: Managed Identity**
+- Status: PENDING
+- Goal: Replace basic authentication with managed identity
+- Planned Features:
+  - User-assigned managed identity (UAMI)
+  - Role-based access control (RBAC)
+  - Key Vault integration for secrets
+  - Secure storage account access
+  - Service-to-service authentication
+  - Enhanced security posture
+
+### Future Iterations (Post-Managed Identity)
+
+5. **Multiple Environments**: Add dev/staging/prod environments
+6. **Advanced Monitoring**: Enhanced Application Insights configuration
+7. **Security**: Network restrictions, private endpoints
+8. **Database Integration**: Add database connections
+9. **API Authentication**: Add proper API authentication
+10. **Performance Optimization**: Scaling, caching, optimization patterns
 
 ## Success Criteria
 
@@ -382,4 +417,6 @@ This project is considered successful when:
 1. ✅ Create GitHub repository 
 2. ✅ Configure `AZURE_CREDENTIALS` secret
 3. ✅ Test both GitHub Actions workflows
-4. ✅ Project fully complete - ready for next iteration (managed identity)
+4. ✅ Project fully complete - ready for Iteration 3 (Complex Function App)
+
+**Iteration Roadmap**: This project serves as the foundation for systematic progression through increasingly complex Azure Function patterns, with each iteration building on the previous success.
