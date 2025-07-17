@@ -7,6 +7,9 @@ param location string = resourceGroup().location
 @description('The name of the storage account')
 param storageAccountName string
 
+// Generate unique storage account name
+var uniqueStorageAccountName = '${storageAccountName}${uniqueString(resourceGroup().id)}'
+
 @description('The name of the Application Insights instance')
 param appInsightsName string
 
@@ -15,7 +18,7 @@ param hostingPlanName string
 
 // Storage Account for function app
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: storageAccountName
+  name: uniqueStorageAccountName
   location: location
   sku: {
     name: 'Standard_LRS'
