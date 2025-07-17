@@ -299,11 +299,67 @@ After this IaC version is working, future iterations can add:
 
 This project is considered successful when:
 
-- ✅ Infrastructure deploys via GitHub Actions
+- ❓ Infrastructure deploys via GitHub Actions (Manual ✅, GitHub Actions ❓)
 - ✅ Function app is created with correct configuration
-- ✅ Application deploys via GitHub Actions
+- ❓ Application deploys via GitHub Actions (Manual ✅, GitHub Actions ❓)
 - ✅ All three endpoints return expected responses
 - ✅ Configuration matches working exemplar project
+
+**Current Status**: Manual deployment successful, GitHub Actions workflows still need testing
+
+## Deployment Results
+
+### Manual Deployment Success ⚠️
+
+**Deployment Method**: Manual Azure CLI (NOT GitHub Actions)
+**Deployment Date**: 2025-07-17
+**Status**: ✅ **SUCCESSFUL**
+
+**Resources Created**:
+- **Function App**: `simple-func-iac-ba`
+- **Storage Account**: `sfiacbalhbicnagrsmhk` (23 chars, valid)
+- **Application Insights**: `simple-func-iac-ba-insights`
+- **Hosting Plan**: `simple-func-iac-ba-plan`
+
+**Function App URL**: https://simple-func-iac-ba.azurewebsites.net
+
+**Functions Registered**:
+- ✅ `health` - [httpTrigger] - ANONYMOUS
+- ✅ `hello` - [httpTrigger] - ANONYMOUS  
+- ✅ `test` - [httpTrigger] - ANONYMOUS
+
+### GitHub Actions Workflows Status
+
+**⚠️ IMPORTANT**: The successful deployment above was done manually via Azure CLI, not through GitHub Actions workflows.
+
+**Infrastructure Workflow** (`deploy-infra.yml`):
+- **Status**: ❓ **NOT YET TESTED**
+- **Configuration**: Updated with Azure CLI 2.72.0 and fixed storage account naming
+- **Ready for Testing**: ✅ Configuration should work based on manual success
+
+**Application Workflow** (`deploy-app.yml`):
+- **Status**: ❓ **NOT YET TESTED**
+- **Configuration**: Standard Azure Functions Action deployment
+- **Ready for Testing**: ✅ Should work (same approach as manual deployment)
+
+### Endpoint Testing Results
+
+**All endpoints tested and working perfectly**:
+
+1. **Health Endpoint**: ✅ `https://simple-func-iac-ba.azurewebsites.net/api/health`
+   - **Response**: `{"status": "healthy", "timestamp": "2025-07-17T18:13:56.711087", "version": "1.0.0"}`
+
+2. **Test Endpoint**: ✅ `https://simple-func-iac-ba.azurewebsites.net/api/test`
+   - **Response**: `"Hello from Azure Functions! This is a simple test endpoint."`
+
+3. **Hello Endpoint**: ✅ `https://simple-func-iac-ba.azurewebsites.net/api/hello?name=IaC`
+   - **Response**: `"Hello, IaC! Welcome to Azure Functions."`
+
+### Key Fixes Applied
+
+1. **Storage Account Naming**: Fixed name length issue by shortening `simplefunciacba` → `sfiacba`
+2. **Azure CLI Version**: Used Azure CLI 2.72.0 to avoid "content consumed" bug
+3. **Parameter Consistency**: Ensured all parameters match between workflows and templates
 
 ## Support and Maintenance
 
@@ -315,5 +371,9 @@ This project is considered successful when:
 ---
 
 **Last Updated**: 2025-07-17
-**Status**: In Development
-**Next Steps**: Create GitHub repository and test deployment workflows
+**Status**: ⚠️ **MANUAL DEPLOYMENT SUCCESSFUL - GitHub Actions NOT YET TESTED**
+**Next Steps**: 
+1. Create GitHub repository 
+2. Configure `AZURE_CREDENTIALS` secret
+3. Test both GitHub Actions workflows
+4. Mark as fully complete once automated workflows work

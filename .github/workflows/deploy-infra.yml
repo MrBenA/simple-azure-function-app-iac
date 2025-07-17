@@ -46,7 +46,7 @@ jobs:
               --template-file infra/main.bicep \
               --parameters \
                 functionAppName='simple-func-iac-ba' \
-                storageAccountName='simplefunciacba' \
+                storageAccountName='sfiacba' \
                 appInsightsName='simple-func-iac-ba-insights' \
                 hostingPlanName='simple-func-iac-ba-plan' \
               --verbose
@@ -62,7 +62,7 @@ jobs:
               --template-file infra/main.bicep \
               --parameters \
                 functionAppName='simple-func-iac-ba' \
-                storageAccountName='simplefunciacba' \
+                storageAccountName='sfiacba' \
                 appInsightsName='simple-func-iac-ba-insights' \
                 hostingPlanName='simple-func-iac-ba-plan' \
               --name infrastructure-deployment \
