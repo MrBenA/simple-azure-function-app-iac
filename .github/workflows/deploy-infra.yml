@@ -42,20 +42,18 @@ jobs:
           
           echo "=== Starting Infrastructure Deployment ==="
           
-          # Build Bicep template
-          echo "Building Bicep template..."
-          az bicep build --file infra/main.bicep --outfile infra/main.json
+          # Try different deployment approach with inline parameters
+          echo "Attempting deployment with inline parameters..."
           
-          echo "Template built successfully"
-          
-          # Try different deployment approach
-          echo "Attempting deployment..."
-          
-          # Method 1: Try with --no-wait flag
+          # Method 1: Try with --no-wait flag and inline parameters
           timeout 300 az deployment group create \
             --resource-group rg-simple-func-iac \
-            --template-file infra/main.json \
-            --parameters infra/main.bicepparam \
+            --template-file infra/main.bicep \
+            --parameters \
+              functionAppName='simple-func-iac-ba' \
+              storageAccountName='simplefunciacba' \
+              appInsightsName='simple-func-iac-ba-insights' \
+              hostingPlanName='simple-func-iac-ba-plan' \
             --name infrastructure-deployment \
             --mode Incremental \
             --no-wait \
