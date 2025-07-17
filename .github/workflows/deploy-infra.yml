@@ -22,7 +22,6 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: false
           allow-no-subscriptions: false
-          azcliversion: 2.72.0
 
       - name: Create Resource Group
         run: |
@@ -37,32 +36,38 @@ jobs:
           az group list --output table
 
       - name: Test Deployment (What-If)
-        run: |
-          echo "=== Testing deployment to identify any issues ==="
-          az deployment group what-if \
-            --resource-group rg-simple-func-iac \
-            --template-file infra/main.bicep \
-            --parameters \
-              functionAppName='simple-func-iac-ba' \
-              storageAccountName='simplefunciacba' \
-              appInsightsName='simple-func-iac-ba-insights' \
-              hostingPlanName='simple-func-iac-ba-plan' \
-            --verbose
+        uses: azure/cli@v2
+        with:
+          azcliversion: 2.72.0
+          inlineScript: |
+            echo "=== Testing deployment to identify any issues ==="
+            az deployment group what-if \
+              --resource-group rg-simple-func-iac \
+              --template-file infra/main.bicep \
+              --parameters \
+                functionAppName='simple-func-iac-ba' \
+                storageAccountName='simplefunciacba' \
+                appInsightsName='simple-func-iac-ba-insights' \
+                hostingPlanName='simple-func-iac-ba-plan' \
+              --verbose
 
       - name: Deploy Infrastructure with Azure CLI (Fixed Version)
-        run: |
-          echo "=== Starting actual deployment ==="
-          az deployment group create \
-            --resource-group rg-simple-func-iac \
-            --template-file infra/main.bicep \
-            --parameters \
-              functionAppName='simple-func-iac-ba' \
-              storageAccountName='simplefunciacba' \
-              appInsightsName='simple-func-iac-ba-insights' \
-              hostingPlanName='simple-func-iac-ba-plan' \
-            --name infrastructure-deployment \
-            --mode Incremental \
-            --verbose
+        uses: azure/cli@v2
+        with:
+          azcliversion: 2.72.0
+          inlineScript: |
+            echo "=== Starting actual deployment with Azure CLI 2.72.0 ==="
+            az deployment group create \
+              --resource-group rg-simple-func-iac \
+              --template-file infra/main.bicep \
+              --parameters \
+                functionAppName='simple-func-iac-ba' \
+                storageAccountName='simplefunciacba' \
+                appInsightsName='simple-func-iac-ba-insights' \
+                hostingPlanName='simple-func-iac-ba-plan' \
+              --name infrastructure-deployment \
+              --mode Incremental \
+              --verbose
 
       - name: Get Deployment Outputs
         id: get-outputs

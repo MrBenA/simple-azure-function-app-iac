@@ -32,7 +32,6 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: false
           allow-no-subscriptions: false
-          azcliversion: 2.72.0
 
       - name: Deploy Function App
         uses: Azure/functions-action@v1
